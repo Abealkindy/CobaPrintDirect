@@ -48,10 +48,7 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
                 CustomPrinterServiceBack customPrinterService = new CustomPrinterServiceBack(
                         mainBinding.editTextIp.getText().toString(),
                         9100,
-                        stream2file(getAssets().open("cobaprint.pdf")),
-                        "stream2file.pdf",
-                        CustomPrinterServiceBack.PaperSize.A4,
-                        1
+                        stream2file(getAssets().open("cobaprint.pdf"))
                 );
                 customPrinterService.setPrintServiceListener(MainActivity.this);
                 customPrinterService.execute();

@@ -1,52 +1,28 @@
 package com.otongsutardjoe.cobaprintdirect;
 
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class CustomPrinterServiceBack extends AsyncTask<Void, Void, Boolean> {
-
-    public enum PaperSize {
-        A4,
-        A5
-    }
-
-    private static final String TAG = "CustomPrinterService";
 
     private PrintServiceListener mPrintServiceListener;
 
     private String mPrinterIP;
-    private String mFilename;
 
     private int mPrinterPort;
-    private int mNumberOfCopies;
 
     private File mFile;
-    private PaperSize mPaperSize;
 
-    public CustomPrinterServiceBack(
-            final String printerIP,
-            final int printerPort,
-            final File file,
-            final String filename,
-            final PaperSize paperSize,
-            final int copies) {
+    public CustomPrinterServiceBack(final String printerIP, final int printerPort, final File file) {
         mPrinterIP = printerIP;
         mPrinterPort = printerPort;
         mFile = file;
-        mFilename = filename;
-        mPaperSize = paperSize;
-        mNumberOfCopies = copies;
     }
 
     @Override
@@ -73,9 +49,14 @@ public class CustomPrinterServiceBack extends AsyncTask<Void, Void, Boolean> {
             fis = new FileInputStream(mFile);
             bis = new BufferedInputStream(fis);
             bis.read(mybytearray, 0, mybytearray.length);
-            OutputStream os = clientSocket.getOutputStream();
-            os.write(mybytearray, 0, mybytearray.length);
-            os.flush();
+            OutputStream os;
+            if (clientSocket != null) {
+                os = clientSocket.getOutputStream();
+                if (os != null) {
+                    os.write(mybytearray, 0, mybytearray.length);
+                    os.flush();
+                }
+            }
         } catch (Exception e) {
             if (mPrintServiceListener != null) {
                 mPrintServiceListener.onNetworkError(e.getMessage());
@@ -86,8 +67,12 @@ public class CustomPrinterServiceBack extends AsyncTask<Void, Void, Boolean> {
             e.printStackTrace();
         } finally {
             try {
-                clientSocket.close();
-                bis.close();
+                if (clientSocket != null) {
+                    clientSocket.close();
+                }
+                if (bis != null) {
+                    bis.close();
+                }
                 if (result == null) {
                     result = true;
                 }
