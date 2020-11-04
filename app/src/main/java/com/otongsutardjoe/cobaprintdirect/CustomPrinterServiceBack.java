@@ -1,15 +1,20 @@
 package com.otongsutardjoe.cobaprintdirect;
 
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
-import java.io.DataInputStream;
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
-public class CustomPrinterService extends AsyncTask<Void, Void, Boolean> {
+public class CustomPrinterServiceBack extends AsyncTask<Void, Void, Boolean> {
 
     public enum PaperSize {
         A4,
@@ -29,7 +34,7 @@ public class CustomPrinterService extends AsyncTask<Void, Void, Boolean> {
     private File mFile;
     private PaperSize mPaperSize;
 
-    public CustomPrinterService(
+    public CustomPrinterServiceBack(
             final String printerIP,
             final int printerPort,
             final File file,
@@ -47,62 +52,53 @@ public class CustomPrinterService extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected Boolean doInBackground(Void... voids) {
         Boolean result = null;
-        Socket socket = null;
-        DataOutputStream out = null;
-        FileInputStream inputStream = null;
+        Socket clientSocket = null;
+        FileInputStream fis;
+        BufferedInputStream bis = null;
+
         try {
-            socket = new Socket(mPrinterIP, mPrinterPort);
-            out = new DataOutputStream(socket.getOutputStream());
-//            DataInputStream input = new DataInputStream(socket.getInputStream());
-            inputStream = new FileInputStream(mFile);
-            byte[] buffer = new byte[3000];
-            final char ESC = 0x1b;
-            final String UEL = ESC + "%-12345X";
-            final String ESC_SEQ = ESC + "%-12345\r\n";
-
-            out.writeBytes(UEL);
-            out.writeBytes("@PJL \r\n");
-            out.writeBytes("@PJL JOB NAME = '" + mFilename + "' \r\n");
-            out.writeBytes("@PJL SET PAPER=" + mPaperSize.name());
-            out.writeBytes("@PJL SET COPIES=" + mNumberOfCopies);
-            out.writeBytes("@PJL ENTER LANGUAGE = PDF\r\n");
-            while (inputStream.read(buffer) != -1)
-                out.write(buffer);
-            out.writeBytes(ESC_SEQ);
-            out.writeBytes("@PJL \r\n");
-            out.writeBytes("@PJL RESET \r\n");
-            out.writeBytes("@PJL EOJ NAME = '" + mFilename + "'");
-            out.writeBytes(UEL);
-
-            out.flush();
-        } catch (Exception exception) {
+            clientSocket = new Socket(mPrinterIP, mPrinterPort);
+        } catch (Exception e) {
             if (mPrintServiceListener != null) {
-                mPrintServiceListener.onNetworkError(exception.getMessage());
+                mPrintServiceListener.onNetworkError(e.getMessage());
             }
 
-            Log.e("Error ", exception.toString());
+            Log.e("Error ", e.toString());
             result = false;
+            e.printStackTrace();
+        }
+
+        byte[] mybytearray = new byte[(int) mFile.length()];
+        try {
+            fis = new FileInputStream(mFile);
+            bis = new BufferedInputStream(fis);
+            bis.read(mybytearray, 0, mybytearray.length);
+            OutputStream os = clientSocket.getOutputStream();
+            os.write(mybytearray, 0, mybytearray.length);
+            os.flush();
+        } catch (Exception e) {
+            if (mPrintServiceListener != null) {
+                mPrintServiceListener.onNetworkError(e.getMessage());
+            }
+
+            Log.e("Error ", e.toString());
+            result = false;
+            e.printStackTrace();
         } finally {
             try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-                if (out != null) {
-                    out.close();
-                }
-                if (socket != null) {
-                    socket.close();
-                }
+                clientSocket.close();
+                bis.close();
                 if (result == null) {
                     result = true;
                 }
-            } catch (Exception exception) {
+            } catch (Exception e) {
                 if (mPrintServiceListener != null) {
-                    mPrintServiceListener.onNetworkError(exception.getMessage());
+                    mPrintServiceListener.onNetworkError(e.getMessage());
                 }
 
-                Log.e("Error ", exception.toString());
+                Log.e("Error ", e.toString());
                 result = false;
+                e.printStackTrace();
             }
         }
         return result;
