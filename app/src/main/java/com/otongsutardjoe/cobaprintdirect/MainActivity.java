@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
         super.onCreate(savedInstanceState);
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
-        PDFBoxResourceLoader.init(MainActivity.this);
         initEvent();
     }
 
