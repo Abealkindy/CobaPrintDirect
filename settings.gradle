@@ -1,0 +1,3 @@
+include ':PdfViewer'
+include ':app'
+rootProject.name = "Coba Print Direct"

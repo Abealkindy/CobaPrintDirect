@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="30dp"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/edit_text_ip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:hint="Isi IP Printer di sini"
+        android:inputType="phone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="*Required : \nInternet Permission : V &amp;&amp; Driver : X"
+        android:textColor="@android:color/holo_red_light"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/button_print_with_socket"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:text="Print with Socket" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="*Required : \nInternet Permission : X &amp;&amp; Driver : V"
+        android:textColor="@android:color/holo_red_light"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/button_print_with_print_helper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Print with PrintHelper"
+        android:visibility="gone" />
+</LinearLayout>
