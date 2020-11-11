@@ -46,6 +46,7 @@ dependencies {
     implementation 'com.tom_roush:pdfbox-android:1.8.10.1'
     implementation 'io.github.jonathanlink:PDFLayoutTextStripper:2.2.3'
     implementation 'com.itextpdf:itextg:5.5.10'
+    implementation 'ru.alexbykov:nopermission:1.1.2'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation project(':PdfViewer')
     testImplementation 'junit:junit:4.12'
