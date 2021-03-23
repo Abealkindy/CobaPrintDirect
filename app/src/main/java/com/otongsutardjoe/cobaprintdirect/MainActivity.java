@@ -112,12 +112,12 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
     }
 
     private void fixedPDFDirectPrint() {
-        if (!mainBinding.editTextIp.getText().toString().isEmpty()) {
+        if (!mainBinding.editTextPort.getText().toString().isEmpty() && !mainBinding.editTextIp.getText().toString().isEmpty()) {
             Toast.makeText(this, "Clicked!", Toast.LENGTH_SHORT).show();
             try {
                 CustomPrinterServiceBack customPrinterService = new CustomPrinterServiceBack(
                         mainBinding.editTextIp.getText().toString(),
-                        9100,
+                        Integer.parseInt(mainBinding.editTextPort.getText().toString()),
                         stream2file(getAssets().open("cobaprint.pdf"))
                 );
                 customPrinterService.setPrintServiceListener(MainActivity.this);
