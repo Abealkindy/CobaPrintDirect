@@ -5,12 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
+
+import static de.gmuth.ipp.client.IppTemplateAttributes.*;
 
 import com.otongsutardjoe.cobaprintdirect.databinding.ActivityMainBinding;
 import com.tom_roush.pdfbox.io.IOUtils;
@@ -21,7 +27,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
+import de.gmuth.ipp.client.IppColorMode;
+import de.gmuth.ipp.client.IppJob;
+import de.gmuth.ipp.client.IppJobState;
+import de.gmuth.ipp.client.IppPrinter;
+import de.gmuth.ipp.client.IppSides;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
     public static final String PREFIX = "stream2file";
     public static final String SUFFIX = ".pdf";
     private PermissionHelper permissionHelper;
+    private CustomPrinterServiceBack customPrinterServiceBack;
+    private CustomPrinterService customPrinterService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +75,65 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
             }
 
         });
+        mainBinding.buttonPrintWithIpp.setOnClickListener(v -> printWithIPP());
+    }
+
+    private void printWithIPP() {
+        if (!mainBinding.editTextPort.getText().toString().isEmpty() && !mainBinding.editTextIp.getText().toString().isEmpty()) {
+            Log.e("Clicked", "Yes!");
+            new MyTask().execute();
+        } else {
+            Toast.makeText(this, "Masih Kosong ey", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class MyTask extends AsyncTask<Void, Void, Void> {
+        public MyTask() {
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                IppPrinter ippPrinter = new IppPrinter("ipp://" + mainBinding.editTextIp.getText().toString());
+//                IppPrinter ippPrinter = new IppPrinter("ipp://colorjet.local/ipp/printer");
+                ippPrinter.logDetails();
+                File file = stream2file(getAssets().open("cobaprint.pdf"));
+//                IppJob job = ippPrinter.printJob(
+//                        file,
+//                        documentFormat("application/pdf"),
+//                        jobName(file.getName()),
+//                        IppColorMode.Auto,
+//                        IppSides.TwoSidedLongEdge
+//                );
+                IppJob job = ippPrinter.printJob(
+                        file
+                );
+                job.logDetails();
+                job.waitForTermination();
+                job.logDetails();
+                if (job.getState() == IppJobState.Processing) {
+                    Log.e("otw print", "Yes!");
+                } else if (job.getState() == IppJobState.Completed) {
+                    Log.e("kelar", "Yes!");
+                } else if (job.getState() == IppJobState.Aborted || job.getState() == IppJobState.Canceled) {
+                    Log.e("Aborted or Cancelled", "Yes!");
+                }
+            } catch (Exception e) {
+                if (e.getMessage() != null) {
+                    Log.e("Error", e.getMessage());
+                } else {
+                    Log.e("Error", "gak ada apa2");
+                }
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+        }
     }
 
     private void fileToBase64() {
@@ -115,10 +189,21 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
         if (!mainBinding.editTextPort.getText().toString().isEmpty() && !mainBinding.editTextIp.getText().toString().isEmpty()) {
             Toast.makeText(this, "Clicked!", Toast.LENGTH_SHORT).show();
             try {
-                CustomPrinterServiceBack customPrinterService = new CustomPrinterServiceBack(
+//                customPrinterServiceBack = new CustomPrinterServiceBack(
+//                        mainBinding.editTextIp.getText().toString(),
+//                        Integer.parseInt(mainBinding.editTextPort.getText().toString()),
+//                        stream2file(getAssets().open("cobaprint.pdf"))
+//                );
+//                customPrinterServiceBack.setPrintServiceListener(MainActivity.this);
+//                customPrinterServiceBack.execute();
+//
+                customPrinterService = new CustomPrinterService(
                         mainBinding.editTextIp.getText().toString(),
                         Integer.parseInt(mainBinding.editTextPort.getText().toString()),
-                        stream2file(getAssets().open("cobaprint.pdf"))
+                        stream2file(getAssets().open("cobaprint.pdf")),
+                        "cobaprint.pdf",
+                        CustomPrinterService.PaperSize.A4,
+                        1
                 );
                 customPrinterService.setPrintServiceListener(MainActivity.this);
                 customPrinterService.execute();
@@ -143,11 +228,17 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
     @Override
     public void onPrintCompleted() {
         Log.e("result", "Finished!");
+        if (customPrinterServiceBack != null && !customPrinterServiceBack.isCancelled()) {
+            customPrinterServiceBack.cancel(true);
+        }
         runOnUiThread(() -> Toast.makeText(MainActivity.this, "Result : Finished!", Toast.LENGTH_SHORT).show());
     }
 
     @Override
     public void onNetworkError(String message) {
+        if (customPrinterServiceBack != null && !customPrinterServiceBack.isCancelled()) {
+            customPrinterServiceBack.cancel(true);
+        }
         Log.e("result", "Error : " + message);
         runOnUiThread(() -> Toast.makeText(MainActivity.this, "Result : Error : " + message, Toast.LENGTH_SHORT).show());
     }

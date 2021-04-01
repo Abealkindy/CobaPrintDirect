@@ -1,3 +1,2 @@
-include ':PdfViewer'
-include ':app'
+include ':app', ':IPPClient', ':PdfViewer', ':ipp-client-kotlin-2.0'
 rootProject.name = "Coba Print Direct"

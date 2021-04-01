@@ -36,8 +36,15 @@
         android:id="@+id/button_print_with_socket"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="10dp"
         android:text="Print with Socket" />
+
+    <Button
+        android:id="@+id/button_print_with_ipp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:text="Print with IPP" />
 
     <TextView
         android:layout_width="match_parent"

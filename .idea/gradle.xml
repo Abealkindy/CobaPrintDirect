@@ -10,8 +10,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/IPPClient" />
             <option value="$PROJECT_DIR$/PdfViewer" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/ipp-client-kotlin-2.0" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
