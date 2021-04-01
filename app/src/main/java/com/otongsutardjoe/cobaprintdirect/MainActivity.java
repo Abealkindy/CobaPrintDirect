@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements CustomPrinterServ
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                IppPrinter ippPrinter = new IppPrinter("ipp://" + mainBinding.editTextIp.getText().toString());
+                IppPrinter ippPrinter = new IppPrinter("ipp://" + mainBinding.editTextIp.getText().toString()+"/ipp/print");
 //                IppPrinter ippPrinter = new IppPrinter("ipp://colorjet.local/ipp/printer");
                 ippPrinter.logDetails();
                 File file = stream2file(getAssets().open("cobaprint.pdf"));
